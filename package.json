@@ -1,0 +1,30 @@
+{
+  "name": "foosball-bot",
+  "version": "1.0.0",
+  "description": "telegram's bot for counting of wishing to play foosball",
+  "main": "bin/app.js",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/maestroMike/FoosballBot"
+  },
+  "readme": "README.md",
+  "author": {
+    "name": "Bardynin Mikhail"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "config": "^1.28.1",
+    "express": "^4.16.2",
+    "node-telegram-bot-api": "^0.29.0",
+    "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.50",
+    "gulp": "^3.9.1",
+    "gulp-zip": "^4.0.0",
+    "typescript": "^2.6.2"
+  },
+  "engines": {
+    "node": "7.7.4"
+  }
+}
