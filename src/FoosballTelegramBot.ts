@@ -58,6 +58,14 @@ export class FoosballTelegramBot {
 
 		this.bot.onText(/\/start/, 
 			async (msg) => await this.startGame(msg, self));
+			
+
+		this.bot.onText(/\/reset/, 
+			(msg) => {
+				const chatId = msg.chat.id;
+				var game = serviceLocator.gameHolder.get(chatId);
+				game.reset();				
+			});
 
 		this.bot.onText(/\+/, 
 			(msg) => {					
