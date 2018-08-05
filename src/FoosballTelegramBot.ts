@@ -1,6 +1,7 @@
 ﻿var TelegramBot = require("node-telegram-bot-api");
 import { serviceLocator } from "./ServiceLocator"
 import { ITelegramBotSettings } from "./Config";
+var emoji = require('node-emoji').emoji;
 
 export class FoosballTelegramBot {
 	private readonly options: ITelegramBotSettings;
@@ -58,14 +59,14 @@ export class FoosballTelegramBot {
 		this.bot.onText(/\/start/, 
 			async (msg) => await this.startGame(msg, self));
 
-		this.bot.onText(/+/, 
+		this.bot.onText(/\+/, 
 			(msg) => {					
 				const opts = {parse_mode: "Markdown"};
 				const chatId = msg.chat.id;
 				var game = serviceLocator.gameHolder.get(chatId);
 				if(!game.addplayer(msg.from))
 				{
-					this.bot.sendMessage(chatId, `${msg.from}, you either have already registered or you are late.`, opts);
+					this.bot.sendMessage(chatId, `${msg.from.first_name}, you either have already registered or you are late.`, opts);
 				}
 				var number = this.getNumberMarkdown(game.countOfPlayers());
 				this.bot.sendMessage(chatId, number, opts);
@@ -109,15 +110,17 @@ export class FoosballTelegramBot {
 	getNumberMarkdown(int: number): string {
 		switch (int) {
 			case 0:
-				return ":zero:";
+				return emoji.zero;
 			case 1:
-				return ":one:";
+				return emoji.one;
 			case 2:
-				return ":two:";
+				return emoji.two;
 			case 3:
-				return ":three:";
+				return emoji.three;
 			case 4:
-				return ":four:";
+				return emoji.four;
+			case 5:
+				return emoji.five;
 			default:
 				return int.toString();
 		}

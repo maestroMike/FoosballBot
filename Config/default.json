@@ -9,5 +9,8 @@
     "allowedGoogleAccounts": [
         "aaa@gmail.com",
         "any"
-    ]
+    ],
+    "gameSettings":{
+        "countOfPlayers": 4
+    }
   }
