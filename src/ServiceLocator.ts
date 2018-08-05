@@ -1,9 +1,11 @@
 ﻿import { Config } from "./Config"
 import { FoosballTelegramBot } from "./FoosballTelegramBot"
+import { GameHolder } from "./GameHolder"
 
 class ServiceLocator {
 	config = require('config') as Config;
-	telegramBot = new MoviesDownloaderTelegramBot(this.config.telegramBotSettings);
+	telegramBot = new FoosballTelegramBot(this.config.telegramBotSettings);
+	gameHolder = new GameHolder(this.config.gameSettings);
 }
 
-export let servicesReporitory = new ServiceLocator();
+export let serviceLocator = new ServiceLocator();

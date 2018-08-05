@@ -1,11 +1,11 @@
-﻿import { servicesReporitory } from "./ServiceLocator"
+﻿import { serviceLocator } from "./ServiceLocator"
 let express = require("express");
 let app = express();
 let bodyParser = require('body-parser');
 
 export class Server {
 	startListening() {
-		let port = process.env.port || servicesReporitory.config.port;
+		let port = process.env.port || serviceLocator.config.port;
 		app.listen(port, (err) => {
 			if (err) {
 				return console.log(err)
@@ -20,8 +20,8 @@ export class Server {
 		
 		// WebHook for bot
         app.use(bodyParser.json());
-        app.post(`/bot${servicesReporitory.config.telegramBotSettings.token}`, (req, res) => {
-          servicesReporitory.telegramBot.processUpdate(req.body);
+        app.post(`/bot${serviceLocator.config.telegramBotSettings.token}`, (req, res) => {
+          serviceLocator.telegramBot.processUpdate(req.body);
           res.sendStatus(200);
 		});
 		
@@ -45,7 +45,7 @@ export class Server {
 
 	private checkPrincipal(req) {
 		const principalName = req.get("x-ms-client-principal-name") || "any";
-		if (servicesReporitory.config.allowedGoogleAccounts.indexOf(principalName) !== -1) {
+		if (serviceLocator.config.allowedGoogleAccounts.indexOf(principalName) !== -1) {
 			return true;
 		}
 

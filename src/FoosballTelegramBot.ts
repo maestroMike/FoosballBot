@@ -1,10 +1,12 @@
 ﻿var TelegramBot = require("node-telegram-bot-api");
-import { servicesReporitory } from "./ServiceLocator"
+import { serviceLocator } from "./ServiceLocator"
 import { ITelegramBotSettings } from "./Config";
 
 export class FoosballTelegramBot {
 	private readonly options: ITelegramBotSettings;
 	private bot;
+
+	private map: { [chatId: string]: number; } = { };
 
 	constructor(options: ITelegramBotSettings) {
 		this.options = options;
@@ -23,11 +25,8 @@ export class FoosballTelegramBot {
 		this.bot.deleteMessage(chatId, messageId);
 	}
 
-	sendMessageTorrentDownloaded(chatId: number, message: string, torrentHash: string) {
-		const keyboard = [
-			this.createKeyboardButton("Yes", CallbackData.create(BotCallbackActions.RemoveTorrent, torrentHash))
-		];
-		const opts = this.createSendMessageOptions(keyboard);
+	sendMessage(chatId: number, message: string) {
+		const opts = this.createSendMessageOptions(null);
 		this.bot.sendMessage(chatId, message, opts);
 	}
 
@@ -59,6 +58,35 @@ export class FoosballTelegramBot {
 		this.bot.onText(/\/start/, 
 			async (msg) => await this.startGame(msg, self));
 
+		this.bot.onText(/+/, 
+			(msg) => {					
+				const opts = {parse_mode: "Markdown"};
+				const chatId = msg.chat.id;
+				var game = serviceLocator.gameHolder.get(chatId);
+				if(!game.addplayer(msg.from))
+				{
+					this.bot.sendMessage(chatId, `${msg.from}, you either have already registered or you are late.`, opts);
+				}
+				var number = this.getNumberMarkdown(game.countOfPlayers());
+				this.bot.sendMessage(chatId, number, opts);
+				if(game.isReady())
+				{
+					this.bot.sendMessage(chatId, `Players ${game.getPlayersNames().join(' , ')} are awaited in the kicker room.`, opts);
+					game.reset();
+					return;	
+				}
+			});			
+
+		this.bot.onText(/-/, 
+			(msg) => {					
+				const opts = {parse_mode: "Markdown"};
+				const chatId = msg.chat.id;
+				var game = serviceLocator.gameHolder.get(chatId);
+				game.removePlayer(msg.from.id);
+				var number = this.getNumberMarkdown(game.countOfPlayers());
+				this.bot.sendMessage(chatId, number, opts);
+			});
+
 		this.bot.on('callback_query', async callbackQuery => {
 			const callbackData = CallbackData.parse(callbackQuery.data);
 			const msg = callbackQuery.message;
@@ -68,7 +96,7 @@ export class FoosballTelegramBot {
 					this.cancelCalback(callbackQuery.id, chatId, msg);
 					return;
 				case BotCallbackActions.JoinGame:
-					await this.joinGameCalback(callbackQuery.id, chatId, msg, callbackData.data);
+					// await this.joinGameCalback(callbackQuery.id, chatId, msg, callbackData.data);
 					return;
 				default:
 					console.warn(`Unknown callback action registered: '${callbackData.toString()}'`);
@@ -76,6 +104,23 @@ export class FoosballTelegramBot {
 		});
 		
 		return console.log(`bot is activated`)
+	}
+
+	getNumberMarkdown(int: number): string {
+		switch (int) {
+			case 0:
+				return ":zero:";
+			case 1:
+				return ":one:";
+			case 2:
+				return ":two:";
+			case 3:
+				return ":three:";
+			case 4:
+				return ":four:";
+			default:
+				return int.toString();
+		}
 	}
 
 	private async startGame(msg, self: this) {			

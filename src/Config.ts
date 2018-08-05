@@ -1,5 +1,6 @@
 ﻿export interface Config {
 	telegramBotSettings: ITelegramBotSettings;
+	gameSettings: IGameSettings;
 	port: number;
 	allowedGoogleAccounts: string[];
 }
@@ -9,4 +10,9 @@ export interface ITelegramBotSettings {
 	allowedChats: number[];
 	useWebHooks: boolean;
 	webHooksBaseUrl: string;
+}
+
+
+export interface IGameSettings {
+	countOfPlayers: number;
 }
