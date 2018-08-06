@@ -7,8 +7,6 @@ export class FoosballTelegramBot {
 	private readonly options: ITelegramBotSettings;
 	private bot;
 
-	private map: { [chatId: string]: number; } = { };
-
 	constructor(options: ITelegramBotSettings) {
 		this.options = options;
 	}
@@ -67,33 +65,33 @@ export class FoosballTelegramBot {
 				game.reset();				
 			});
 
-		this.bot.onText(/\+/, 
-			(msg) => {					
-				const opts = {parse_mode: "Markdown"};
+		this.bot.onText(/^\+/, 
+			async (msg) => {
 				const chatId = msg.chat.id;
 				var game = serviceLocator.gameHolder.get(chatId);
 				if(!game.addplayer(msg.from))
 				{
-					this.bot.sendMessage(chatId, `${msg.from.first_name}, you either have already registered or you are late.`, opts);
+					await this.bot.sendMessage(chatId, `${msg.from.first_name}, you have already registered.`);
 				}
 				var number = this.getNumberMarkdown(game.countOfPlayers());
-				this.bot.sendMessage(chatId, number, opts);
 				if(game.isReady())
 				{
-					this.bot.sendMessage(chatId, `Players ${game.getPlayersNames().join(' , ')} are awaited in the kicker room.`, opts);
+					const opts = {parse_mode: "Markdown"};
+					this.bot.sendMessage(chatId, `${number} Players ${game.getPlayersNames().join(' , ')} please proceed to the meeting room.`, opts);
 					game.reset();
 					return;	
 				}
+
+				await this.bot.sendMessage(chatId, number);
 			});			
 
-		this.bot.onText(/-/, 
-			(msg) => {					
-				const opts = {parse_mode: "Markdown"};
+		this.bot.onText(/^-/, 
+			(msg) => {
 				const chatId = msg.chat.id;
 				var game = serviceLocator.gameHolder.get(chatId);
 				game.removePlayer(msg.from.id);
 				var number = this.getNumberMarkdown(game.countOfPlayers());
-				this.bot.sendMessage(chatId, number, opts);
+				this.bot.sendMessage(chatId, number);
 			});
 
 		this.bot.on('callback_query', async callbackQuery => {

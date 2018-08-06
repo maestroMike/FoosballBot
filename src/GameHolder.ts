@@ -64,7 +64,7 @@ export class GameState
     }
     
 	getPlayersNames(): string[] {
-		return this.players.map(x => `[${x.first_name} ${x.last_name}](tg://user?id=${x.id})`);
+		return this.players.map(x => `[${x.first_name} ${x.last_name || ''}](tg://user?id=${x.id})`);
 	}
 }
 
