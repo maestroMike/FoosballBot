@@ -10,6 +10,7 @@ export interface ITelegramBotSettings {
 	allowedChats: number[];
 	useWebHooks: boolean;
 	webHooksBaseUrl: string;
+	proxy: string;
 }
 
 

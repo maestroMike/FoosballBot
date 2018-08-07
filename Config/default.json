@@ -2,15 +2,16 @@
     "telegramBotSettings": {
         "token": "token",
         "allowedChats": [1, 2, -3],
-	    "useWebHooks": true,
-	    "webHooksBaseUrl": "https://mysite.net"
+        "useWebHooks": true,
+        "webHooksBaseUrl": "https://mysite.net",
+        "proxy": ""
     },
     "port": 1337,
     "allowedGoogleAccounts": [
         "aaa@gmail.com",
         "any"
     ],
-    "gameSettings":{
+    "gameSettings": {
         "countOfPlayers": 4
     }
-  }
+}

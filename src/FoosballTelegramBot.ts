@@ -40,7 +40,12 @@ export class FoosballTelegramBot {
 		}
 		else
 		{
-			this.bot = new TelegramBot(this.options.token, { polling: true });
+			this.bot = new TelegramBot(this.options.token,  { 
+					polling: true,
+					request: {
+						proxy: this.options.proxy,
+				  	},
+			 });
 		}
 
 		this.bot.onText(/\/echo (.+)/, (msg, match) => {
