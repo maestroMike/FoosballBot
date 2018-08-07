@@ -1,6 +1,7 @@
 ﻿var TelegramBot = require("node-telegram-bot-api");
 import { serviceLocator } from "./ServiceLocator"
 import { ITelegramBotSettings } from "./Config";
+import { IPlayer } from "./GameHolder";
 var emoji = require('node-emoji').emoji;
 
 export class FoosballTelegramBot {
@@ -26,7 +27,7 @@ export class FoosballTelegramBot {
 
 	sendMessage(chatId: number, message: string) {
 		const opts = this.createSendMessageOptions(null);
-		this.bot.sendMessage(chatId, message, opts);
+		return this.bot.sendMessage(chatId, message, opts);
 	}
 
 	activate() {
@@ -48,56 +49,17 @@ export class FoosballTelegramBot {
 			 });
 		}
 
-		this.bot.onText(/\/echo (.+)/, (msg, match) => {
-			const chatId = msg.chat.id;
-			const resp = match[1];
-			this.bot.sendMessage(chatId, resp);
-		});
+		this.bot.onText(/\/echo (.+)/, (msg, match) => this.sendMessage(msg.chat.id, match[1]));
 
-		this.bot.onText(/\/getChatId/, (msg) => {
-			const chatId = msg.chat.id;
-			this.bot.sendMessage(chatId, chatId);
-		});
+		this.bot.onText(/\/getChatId/, (msg) => this.sendMessage(msg.chat.id, msg.chat.id));
 
-		this.bot.onText(/\/start/, 
-			async (msg) => await this.startGame(msg, self));
-			
+		this.bot.onText(/\/\+/, async (msg) => await this.startGame(msg, self));			
 
-		this.bot.onText(/\/reset/, 
-			(msg) => {
-				const chatId = msg.chat.id;
-				var game = serviceLocator.gameHolder.get(chatId);
-				game.reset();				
-			});
+		this.bot.onText(/\/reset/, (msg) => serviceLocator.gameHolder.get(msg.chat.id).reset());
 
-		this.bot.onText(/^\+/, 
-			async (msg) => {
-				const chatId = msg.chat.id;
-				var game = serviceLocator.gameHolder.get(chatId);
-				if(!game.addplayer(msg.from))
-				{
-					await this.bot.sendMessage(chatId, `${msg.from.first_name}, you have already registered.`);
-				}
-				var number = this.getNumberMarkdown(game.countOfPlayers());
-				if(game.isReady())
-				{
-					const opts = {parse_mode: "Markdown"};
-					this.bot.sendMessage(chatId, `${number} Players ${game.getPlayersNames().join(' , ')} please proceed to the meeting room.`, opts);
-					game.reset();
-					return;	
-				}
-
-				await this.bot.sendMessage(chatId, number);
-			});			
-
-		this.bot.onText(/^-/, 
-			(msg) => {
-				const chatId = msg.chat.id;
-				var game = serviceLocator.gameHolder.get(chatId);
-				game.removePlayer(msg.from.id);
-				var number = this.getNumberMarkdown(game.countOfPlayers());
-				this.bot.sendMessage(chatId, number);
-			});
+		this.bot.onText(/^\+/, async (msg) => this.joinPlayer(msg.chat.id, msg.from));
+		
+		this.bot.onText(/^-/, async (msg) => this.removePlayer(msg.chat.id, msg.from));
 
 		this.bot.on('callback_query', async callbackQuery => {
 			const callbackData = CallbackData.parse(callbackQuery.data);
@@ -116,6 +78,10 @@ export class FoosballTelegramBot {
 		});
 		
 		return console.log(`bot is activated`)
+	}
+
+	private playerToString(x : IPlayer) : string {
+		return `<a href="tg://user?id=${x.id}">${x.first_name} ${x.last_name || ''}</a>`;
 	}
 
 	getNumberMarkdown(int: number): string {
@@ -148,7 +114,42 @@ export class FoosballTelegramBot {
 			const message = this.createStartGameMessage(username);
 			const opts = this.createSendMessageOptions(keyboard);
 			this.bot.sendMessage(chatId, message, opts);
-			// <a href="tg://user?id=123456789">inline mention of a user</a>
+		} catch (e) {
+			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
+		} 
+	}
+
+	private async joinPlayer(chatId : number, from: IPlayer) {	
+		try {
+			var game = serviceLocator.gameHolder.get(chatId);
+			const isAdded = game.addplayer(from);
+			var number = this.getNumberMarkdown(game.countOfPlayers());
+			if(!isAdded)
+			{
+				this.sendMessage(chatId, `${number} ${from.first_name}, you have already registered.`);
+				return;
+			}
+			
+			if(game.isReady())
+			{
+				const playersNames = game.getPlayers().map(this.playerToString).join(' , ');
+				this.sendMessage(chatId, `${number} Players ${playersNames} please proceed to the meeting room.`);
+				game.reset();
+				return;	
+			}
+
+			this.sendMessage(chatId, number);
+		} catch (e) {
+			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
+		} 
+	}
+
+	private async removePlayer(chatId : number, from: IPlayer) {	
+		try {			
+			var game = serviceLocator.gameHolder.get(chatId);
+			game.removePlayer(from.id);
+			var number = this.getNumberMarkdown(game.countOfPlayers());
+			this.sendMessage(chatId, number);
 		} catch (e) {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 

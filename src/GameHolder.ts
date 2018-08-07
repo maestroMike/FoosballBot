@@ -1,16 +1,15 @@
-
 import { IGameSettings } from "./Config";
 
 export class GameHolder {
 	private readonly settings: IGameSettings;
 
-    private gamesMap : { [chatId: string]: GameState; } = { };
+    private gamesMap : { [chatId: number]: GameState; } = { };
 
 	constructor(settings: IGameSettings) {
 		this.settings = settings;
     }
     
-    get(chatId: string) : GameState
+    get(chatId: number) : GameState
     {
         let game = this.gamesMap[chatId];
         if (game == null) {
@@ -63,8 +62,8 @@ export class GameState
 		return this.players.length;
     }
     
-	getPlayersNames(): string[] {
-		return this.players.map(x => `[${x.first_name} ${x.last_name || ''}](tg://user?id=${x.id})`);
+	getPlayers(): IPlayer[] {
+		return this.players;
 	}
 }
 
