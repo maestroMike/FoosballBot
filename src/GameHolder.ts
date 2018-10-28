@@ -63,7 +63,7 @@ export class GameState
     }
     
 	getPlayers(): IPlayer[] {
-		return this.players;
+		return this.players.slice();
 	}
 }
 

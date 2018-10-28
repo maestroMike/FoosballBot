@@ -49,17 +49,21 @@ export class FoosballTelegramBot {
 			 });
 		}
 
-		this.bot.onText(/\/echo (.+)/, (msg, match) => this.sendMessage(msg.chat.id, match[1]));
+		this.bot.onText(/\/echo (.+)/, async (msg, match) => await this.sendMessage(msg.chat.id, match[1]));
 
-		this.bot.onText(/\/getChatId/, (msg) => this.sendMessage(msg.chat.id, msg.chat.id));
+		this.bot.onText(/\/getChatId/, async (msg) => await this.sendMessage(msg.chat.id, msg.chat.id));
 
-		this.bot.onText(/\/\+/, async (msg) => await this.startGame(msg, self));			
+		this.bot.onText(/\/startGame/, async (msg) => await this.startGame(msg, self));			
 
 		this.bot.onText(/\/reset/, (msg) => serviceLocator.gameHolder.get(msg.chat.id).reset());
 
-		this.bot.onText(/^\+/, async (msg) => this.joinPlayer(msg.chat.id, msg.from));
+		this.bot.onText(/^\/\+/, async (msg) => await this.joinPlayer(msg.chat.id, this.getPlayers(msg)));
+
+		this.bot.onText(/^\+/, async (msg) => await this.joinPlayer(msg.chat.id, this.getPlayers(msg)));
 		
-		this.bot.onText(/^-/, async (msg) => this.removePlayer(msg.chat.id, msg.from));
+		this.bot.onText(/^-/, async (msg) => await this.removePlayer(msg.chat.id, this.getPlayers(msg)));
+		
+		this.bot.onText(/^\/-/, async (msg) => await this.removePlayer(msg.chat.id, this.getPlayers(msg)));
 
 		this.bot.on('callback_query', async callbackQuery => {
 			const callbackData = CallbackData.parse(callbackQuery.data);
@@ -103,6 +107,20 @@ export class FoosballTelegramBot {
 		}
 	}
 
+	private getPlayers(msg) : IPlayer[]
+	{
+		if (!msg.entities) {
+			return [msg.from];	
+		}
+
+		const mentions = msg.entities.map(e => e.user).filter(u => u != null);
+		if (mentions.length == 0) {
+			return [msg.from];
+		}
+	
+		return mentions;
+	}
+
 	private async startGame(msg, self: this) {			
 		const chatId = msg.chat.id;
 		const username = msg.from.first_name;
@@ -119,16 +137,14 @@ export class FoosballTelegramBot {
 		} 
 	}
 
-	private async joinPlayer(chatId : number, from: IPlayer) {	
+	private async joinPlayer(chatId : number, players: IPlayer[]) {	
 		try {
 			var game = serviceLocator.gameHolder.get(chatId);
-			const isAdded = game.addplayer(from);
+			players.forEach(player => {
+				game.addplayer(player)
+			});
+
 			var number = this.getNumberMarkdown(game.countOfPlayers());
-			if(!isAdded)
-			{
-				this.sendMessage(chatId, `${number} ${from.first_name}, you have already registered.`);
-				return;
-			}
 			
 			if(game.isReady())
 			{
@@ -144,10 +160,12 @@ export class FoosballTelegramBot {
 		} 
 	}
 
-	private async removePlayer(chatId : number, from: IPlayer) {	
+	private async removePlayer(chatId : number, players: IPlayer[]) {	
 		try {			
 			var game = serviceLocator.gameHolder.get(chatId);
-			game.removePlayer(from.id);
+			players.forEach(player => {
+				game.removePlayer(player.id)
+			});
 			var number = this.getNumberMarkdown(game.countOfPlayers());
 			this.sendMessage(chatId, number);
 		} catch (e) {
