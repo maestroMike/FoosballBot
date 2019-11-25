@@ -57,6 +57,8 @@ export class FoosballTelegramBot {
 
 		this.bot.onText(/\/reset/, (msg) => serviceLocator.gameHolder.get(msg.chat.id).reset());
 
+		this.bot.onText(/\/anybodyelse/, async (msg) =>  await this.anybodyElse(msg, self));
+
 		this.bot.onText(/^\/\+/, async (msg) => await this.joinPlayer(msg.chat.id, this.getPlayers(msg)));
 
 		this.bot.onText(/^\+/, async (msg) => await this.joinPlayer(msg.chat.id, this.getPlayers(msg)));
@@ -84,8 +86,16 @@ export class FoosballTelegramBot {
 		return console.log(`bot is activated`)
 	}
 
-	private playerToString(x : IPlayer) : string {
-		return `<a href="tg://user?id=${x.id}">${x.first_name} ${x.last_name || ''}</a>`;
+	private playerToString(x : IPlayer, isMention: boolean = true) : string {
+		const name = `${x.first_name} ${x.last_name || ''}`;
+		if(isMention)
+		{
+			return `<a href="tg://user?id=${x.id}">${name}</a>`;
+		}
+		else
+		{
+			return name;
+		}
 	}
 
 	getNumberMarkdown(int: number): string {
@@ -120,7 +130,22 @@ export class FoosballTelegramBot {
 	
 		return mentions;
 	}
+	
+	private async anybodyElse(msg, self: this) {			
+		const chatId = msg.chat.id;
+		
+		try {			
+			const game = serviceLocator.gameHolder.get(msg.chat.id);
+			const all = game.getAllPlayers();
+			const playersToExclude = game.getPlayers().concat(this.getPlayers(msg));
+			const missing = all.filter(x => playersToExclude.indexOf(x) < 0);
 
+			this.bot.sendMessage(chatId, `Anybody else? ${missing.map(x => this.playerToString(x)).join(' , ')}.`);
+		} catch (e) {
+			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
+		} 
+	}
+	
 	private async startGame(msg, self: this) {			
 		const chatId = msg.chat.id;
 		const username = msg.from.first_name;
@@ -136,25 +161,27 @@ export class FoosballTelegramBot {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 
 	}
-
-	private async joinPlayer(chatId : number, players: IPlayer[]) {	
+		
+	private async joinPlayer(chatId : number, playersToAdd: IPlayer[]) {	
 		try {
 			var game = serviceLocator.gameHolder.get(chatId);
-			players.forEach(player => {
+			playersToAdd.forEach(player => {
 				game.addplayer(player)
 			});
 
 			var number = this.getNumberMarkdown(game.countOfPlayers());
+			const players = game.getPlayers();
 			
 			if(game.isReady())
 			{
-				const playersNames = game.getPlayers().map(this.playerToString).join(' , ');
+				const playersNames = players.map(x => this.playerToString(x)).join(' , ');
 				this.sendMessage(chatId, `${number} Players ${playersNames} please proceed to the meeting room.`);
 				game.reset();
 				return;	
 			}
 
-			this.sendMessage(chatId, number);
+			const playersNames = players.map(x => this.playerToString(x, false)).join(' , ');
+			this.sendMessage(chatId, `${number} Players ${playersNames}.`);
 		} catch (e) {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 

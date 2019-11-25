@@ -23,11 +23,54 @@ export class GameHolder {
 
 export class GameState
 {
-    private players: IPlayer[] = [];
-    private settings: IGameSettings;
+    private allPlayers: PlayersColection;
+    private currentPlayers: PlayersColection;
     
 	constructor(settings: IGameSettings) {
-		this.settings = settings;
+        this.allPlayers = new PlayersColection(10000);
+        this.currentPlayers = new PlayersColection(settings.countOfPlayers);
+    }
+
+    addplayer(player: IPlayer) : boolean
+    {
+        this.allPlayers.addplayer(player);
+        return this.currentPlayers.addplayer(player);
+    }
+
+    removePlayer(playerId: number)
+    {
+        this.currentPlayers.removePlayer(playerId);
+    }
+
+	reset() {
+		this.currentPlayers.reset();
+    }
+    
+	isReady(): boolean {
+        return this.currentPlayers.isFull();
+    }
+    
+	countOfPlayers(): number {
+		return this.currentPlayers.countOfPlayers();
+    }
+    
+	getPlayers(): IPlayer[] {
+		return this.currentPlayers.getPlayers();
+    }
+        
+	getAllPlayers(): IPlayer[] {
+		return this.allPlayers.getPlayers();
+    	
+	}
+}
+
+export class PlayersColection
+{
+    private players: IPlayer[] = [];
+    private maxCountOfPlayers: number;
+    
+	constructor(maxCountOfPlayers: number) {
+		this.maxCountOfPlayers = maxCountOfPlayers;
     }
 
     addplayer(player: IPlayer) : boolean
@@ -36,7 +79,7 @@ export class GameState
             return false;
         }
 
-        if(this.players.length >= this.settings.countOfPlayers)
+        if(this.players.length >= this.maxCountOfPlayers)
         {
             return false;
         }
@@ -54,8 +97,8 @@ export class GameState
 		this.players = [];
     }
     
-	isReady(): boolean {
-        return this.players.length == this.settings.countOfPlayers;
+	isFull(): boolean {
+        return this.players.length == this.maxCountOfPlayers;
     }
     
 	countOfPlayers(): number {
