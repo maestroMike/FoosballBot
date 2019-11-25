@@ -1,6 +1,7 @@
 {
   "name": "foosball-bot",
   "version": "1.0.0",
+  "license": "MIT",
   "description": "telegram's bot for counting of wishing to play foosball",
   "main": "bin/app.js",
   "repository": {
@@ -20,10 +21,10 @@
     "request": "^2.83.0"
   },
   "devDependencies": {
-    "@types/node": "^7.0.50",
-    "gulp": "^3.9.1",
-    "gulp-zip": "^4.0.0",
-    "typescript": "^2.6.2"
+    "@types/node": "^7.10.9",
+    "gulp": "^4.0.2",
+    "gulp-zip": "^4.2.0",
+    "typescript": "^3.7.2"
   },
   "engines": {
     "node": "7.7.4"
