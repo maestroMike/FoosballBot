@@ -57,7 +57,7 @@ export class FoosballTelegramBot {
 
 		this.bot.onText(/\/reset/, (msg) => serviceLocator.gameHolder.get(msg.chat.id).reset());
 
-		this.bot.onText(/\/anybodyelse/, (msg) =>  await this.anybodyElse(msg, self));
+		this.bot.onText(/\/anybodyelse/, async (msg) =>  await this.anybodyElse(msg, self));
 
 		this.bot.onText(/^\/\+/, async (msg) => await this.joinPlayer(msg.chat.id, this.getPlayers(msg)));
 
