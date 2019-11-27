@@ -138,9 +138,7 @@ export class FoosballTelegramBot {
 			const game = serviceLocator.gameHolder.get(msg.chat.id);
 			const all = game.getAllPlayers();
 			const playersToExclude = game.getPlayers().concat(this.getPlayers(msg));
-			const missing = all.filter(x => playersToExclude.indexOf(x) < 0);
-
-			const missing = all.filter(x => !playersToExclude.some(y => x.id == y.id);
+			const missing = all.filter(x => !playersToExclude.some(y => x.id == y.id));
 			
 			this.sendMessage(chatId, `Anybody else? ${missing.map(x => this.playerToString(x)).join(' , ')}.`);
 		} catch (e) {
