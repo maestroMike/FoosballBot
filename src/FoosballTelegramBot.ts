@@ -140,7 +140,7 @@ export class FoosballTelegramBot {
 			const playersToExclude = game.getPlayers().concat(this.getPlayers(msg));
 			const missing = all.filter(x => !playersToExclude.some(y => x.id == y.id));
 			
-			this.sendMessage(chatId, `Anybody else? ${missing.map(x => this.playerToString(x)).join(' , ')}.`);
+			this.sendMessage(chatId, `Anybody else? ${missing.map(x => this.playerToString(x)).join(' , ')}`);
 		} catch (e) {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 
@@ -181,7 +181,7 @@ export class FoosballTelegramBot {
 			}
 
 			const playersNames = players.map(x => this.playerToString(x, false)).join(' , ');
-			this.sendMessage(chatId, `${number} ${playersNames}.`);
+			this.sendMessage(chatId, `${number} ${playersNames}`);
 		} catch (e) {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 
@@ -196,7 +196,7 @@ export class FoosballTelegramBot {
 			var number = this.getNumberMarkdown(game.countOfPlayers());
 			
 			const playersNames = game.getPlayers().map(x => this.playerToString(x, false)).join(' , ');
-			this.sendMessage(chatId, `${number} ${playersNames}.`);
+			this.sendMessage(chatId, `${number} ${playersNames}`);
 		} catch (e) {
 			this.bot.sendMessage(chatId, `Something went wrong. Reason: ${e.message}`);
 		} 
