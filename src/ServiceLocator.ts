@@ -1,6 +1,6 @@
 ﻿import { Config } from "./Config"
 import { FoosballTelegramBot } from "./FoosballTelegramBot"
-import { GameHolder } from "./GameHolder"
+import { GameHolder } from "./game/GameHolder"
 
 class ServiceLocator {
 	config = require('config') as Config;

@@ -1,7 +1,7 @@
 ﻿var TelegramBot = require("node-telegram-bot-api");
 import { serviceLocator } from "./ServiceLocator"
 import { ITelegramBotSettings } from "./Config";
-import { IPlayer } from "./GameHolder";
+import { IPlayer } from "./game/IPlayer";
 var emoji = require('node-emoji').emoji;
 
 export class FoosballTelegramBot {
